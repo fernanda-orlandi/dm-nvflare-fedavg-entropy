@@ -3,8 +3,8 @@
 #### Mitigating Non-IID Data impact in Federated Learning with Entropy
 
 Projeto para Dissertação de Mestrado, usando a tecnologia SDK NVFlare da NVIDIA.
-Modelo de Federated Learning: FedAvg
-Framework: Pytorch
+<br>Modelo de Federated Learning: FedAvg
+<br>Framework: Pytorch
 
 A medida de entropia pode ter uma relação direta com dados non-IID para otimizar o cálculo do SGD.
 
@@ -13,7 +13,7 @@ Os dados podem ter menor incerteza com menor entropia.
 A entropia pode ser um critério de seleção de dados.
 
 A entropia medida no nó pode ser um critério para definir novo conjunto de treinamento.
-Pois em um algoritmo de Rede Neural temos os dados de treinamento e dados de teste.
+<br>Pois em um algoritmo de Rede Neural temos os dados de treinamento e dados de teste.
 
 
 ## MNIST FedAvg Entropy
