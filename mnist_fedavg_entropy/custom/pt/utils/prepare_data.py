@@ -139,16 +139,20 @@ def main():
         sum_file.write("Class counts for each client: \n")
         sum_file.write(json.dumps(class_sum))
 
+
+    train_targets = load_mnist_data(args.data_dir)
     entropy_array = []
 
     site_file_path = os.path.join(args.data_dir, "site-")
     for site in range(args.num_sites):
         site_file_name = site_file_path + str(site + 1) + ".npy"
-        np.save(site_file_name, np.array(site_idx[site]))
+        site_idx_arr = np.array(site_idx[site])
+        np.save(site_file_name, site_idx_arr)
         
         # calculating site entropy
-        entropy_array.append(entropy(np.array(site_idx[site])))
+        entropy_array.append(entropy(train_targets[site_idx_arr]))
 
+    # Entropy
     mean_entropy = np.mean(entropy_array)
 
     entropy_file_name = os.path.join(args.data_dir, "meanentropy.txt")

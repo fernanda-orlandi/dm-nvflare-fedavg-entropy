@@ -66,49 +66,34 @@ class ModerateCNN(nn.Module):
         super(ModerateCNN, self).__init__()
         self.conv_layer = nn.Sequential(
             # Conv Layer block 1
-            nn.Conv2d(in_channels=1, out_channels=16, kernel_size=5, stride=1, padding=2),
+            nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
+            nn.BatchNorm2d(8),
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=5, stride=1, padding=2),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Dropout2d(p=0.05),
+
             # Conv Layer block 2
-            #nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
-            #nn.ReLU(inplace=True),
-            #nn.Conv2d(in_channels=64, out_channels=64, kernel_size=3, padding=1),
-            #nn.ReLU(inplace=True),
-            #nn.MaxPool2d(kernel_size=2, stride=2),
-            #nn.Dropout2d(p=0.05),
+            nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Dropout2d(p=0.2),
+            nn.BatchNorm2d(16),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+                        
             # Conv Layer block 3
-            #nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
-            #nn.ReLU(inplace=True),
-            #nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1),
-            #nn.ReLU(inplace=True),
-            #nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(32),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+
         )
 
         self.fc_layer = nn.Sequential(
-            #nn.Dropout(p=0.1),
-            #nn.Linear(4096, 1024),
-            #nn.ReLU(inplace=True),
-            #nn.Linear(576, 256),
-            #nn.ReLU(inplace=True),
-            # nn.Linear(1024, 512),
-            #nn.Linear(256, 256),
-            #nn.ReLU(inplace=True),
-            #nn.Dropout(p=0.1),
 
-            #nn.Linear(1568, 10),
-
-
-            nn.Linear(1568, 512),
+            nn.Flatten(),
+            nn.Linear(288, 100),
             nn.ReLU(inplace=True),
-            nn.Linear(512, 512),
+            nn.Dropout(p=0.3),
+            nn.Linear(100, 10),
             nn.ReLU(inplace=True),
-            nn.Linear(512, 10),
-            #nn.ReLU(inplace=True),
-            #nn.Dropout(p=0.1),
         )
 
     def forward(self, x):

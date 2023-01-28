@@ -23,6 +23,7 @@ from pt.networks.mnist_nets import ModerateCNN
 from pt.utils.mnist_dataset import MNIST_Idx
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import datasets, transforms
+from torchsummary import summary
 
 from nvflare.apis.dxo import DXO, DataKind, MetaKey, from_shareable
 from nvflare.apis.fl_constant import FLContextKey, ReturnCode
@@ -119,7 +120,9 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
         # For Entropy analysis
         entropy_file_name = os.path.join(self.dataset_root, "meanentropy.txt")
         with open(entropy_file_name) as file:
-            self.mean_entropy = math.ceil(float(file.readline()))
+            self.mean_entropy = float(file.readline()) # math.ceil(float(file.readline()))
+
+        print(self.mean_entropy)
 
 #        site_entropy = self.entropy(site_idx)
 #        if (site_entropy > self.mean_entropy):
@@ -130,7 +133,10 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
         # can be replaced by a config-style block
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = ModerateCNN().to(self.device)
+        summary(self.model, (1,28,28))
         self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
+#        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+#        self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.001, alpha=0.9, eps=1e-08, weight_decay=0, momentum=0.9, centered=False, foreach=None)
         self.criterion = torch.nn.CrossEntropyLoss()
         if self.fedproxloss_mu > 0:
             self.log_info(fl_ctx, f"using FedProx loss with mu {self.fedproxloss_mu}")
@@ -138,18 +144,18 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
 
         self.transform_train = transforms.Compose(
             [
-                #transforms.ToTensor(),
                 transforms.ToPILImage(),
-                #transforms.Pad(4, padding_mode="reflect"),
-                #transforms.RandomCrop(32),
-                #transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
-                transforms.Normalize((0.1307,), (0.3081,))
+
+                # global Mean and Standard Deviation of the MNIST dataset
+                transforms.Normalize((0.1307,), (0.3081,)) 
             ]
         )
         self.transform_valid = transforms.Compose(
             [
                 transforms.ToTensor(),
+
+                # global Mean and Standard Deviation of the MNIST dataset
                 transforms.Normalize((0.1307,), (0.3081,))
             ]
         )
@@ -172,7 +178,7 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
 
         self.train_loader = torch.utils.data.DataLoader(self.train_dataset, batch_size=100, shuffle=True, num_workers=2)
 
-        self.valid_loader = torch.utils.data.DataLoader(self.valid_dataset, batch_size=100, shuffle=True, num_workers=2)
+        self.valid_loader = torch.utils.data.DataLoader(self.valid_dataset, batch_size=100, shuffle=False, num_workers=2)
 
     def finalize(self, fl_ctx: FLContext):
         # collect threads, close files here
@@ -188,9 +194,9 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
             self.log_info(fl_ctx, f"Local epoch {self.client_id}: {epoch + 1}/{self.aggregation_epochs} (lr={self.lr})")
             for i, (inputs, labels) in enumerate(train_loader):
 
-                #print(labels)
                 site_entropy = self.entropy(labels)
-                #print(site_entropy)
+#                print(site_entropy)
+
                 if (site_entropy < self.mean_entropy):
 
                     if abort_signal.triggered:
@@ -333,6 +339,7 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
         with torch.no_grad():
             correct, total = 0, 0
             for i, (inputs, labels) in enumerate(valid_loader):
+
                 if abort_signal.triggered:
                     return None
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
@@ -341,6 +348,7 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
 
                 total += inputs.data.size()[0]
                 correct += (pred_label == labels.data).sum().item()
+
             metric = correct / float(total)
             if tb_id:
                 self.writer.add_scalar(tb_id, metric, self.epoch_global)
