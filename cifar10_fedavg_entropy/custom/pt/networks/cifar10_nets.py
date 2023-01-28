@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Source of SimpleCNN and moderateCNN: https://github.com/IBM/FedMA/blob/master/model.py
+# Source of SimpleCNN and moderateCNN: https://github.com/IBM/FedMA/blob/master/model.py,
+# SimpleCNN is also from https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
 
 # MIT License
 
@@ -44,12 +45,12 @@ import torch.nn.functional as F
 class SimpleCNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 32, 5)
+        self.conv1 = nn.Conv2d(3, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(32, 64, 5)
-        self.fc1 = nn.Linear(1024, 512)
-        self.fc2 = nn.Linear(512, 256)
-        self.fc3 = nn.Linear(256, 10)
+        self.conv2 = nn.Conv2d(6, 16, 5)
+        self.fc1 = nn.Linear(16 * 5 * 5, 120)
+        self.fc2 = nn.Linear(120, 84)
+        self.fc3 = nn.Linear(84, 10)
 
     def forward(self, x):
         x = self.pool(F.relu(self.conv1(x)))
@@ -66,39 +67,48 @@ class ModerateCNN(nn.Module):
         super(ModerateCNN, self).__init__()
         self.conv_layer = nn.Sequential(
             # Conv Layer block 1
-            nn.Conv2d(in_channels=1, out_channels=8, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.BatchNorm2d(8),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(64),
             nn.MaxPool2d(kernel_size=2, stride=2),
 
             # Conv Layer block 2
-            nn.Conv2d(in_channels=8, out_channels=16, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.Dropout2d(p=0.2),
-            nn.BatchNorm2d(16),
+            nn.Conv2d(in_channels=128, out_channels=128, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.Dropout2d(p=0.05),
+            nn.BatchNorm2d(128),
             nn.MaxPool2d(kernel_size=2, stride=2),
-                        
+            
             # Conv Layer block 3
-            nn.Conv2d(in_channels=16, out_channels=32, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(in_channels=128, out_channels=256, kernel_size=3, padding=1),
             nn.ReLU(inplace=True),
-            nn.BatchNorm2d(32),
+            nn.Conv2d(in_channels=256, out_channels=256, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True),
+            nn.BatchNorm2d(256),
             nn.MaxPool2d(kernel_size=2, stride=2),
-
+            nn.Dropout(p=0.1),
         )
 
         self.fc_layer = nn.Sequential(
-
             nn.Flatten(),
-            nn.Linear(288, 100),
+#            nn.Linear(4096, 1024),
+            nn.Linear(4096, 512),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3),
-            nn.Linear(100, 10),
+#            nn.Dropout(p=0.1),
+#            nn.Linear(1024, 512),
+            nn.Linear(512, 512),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.1),
+            nn.Linear(512, 10),
             nn.ReLU(inplace=True),
         )
 
     def forward(self, x):
         x = self.conv_layer(x)
-        #print(x.size())
         x = x.view(x.size(0), -1)
         x = self.fc_layer(x)
         return x

@@ -39,3 +39,28 @@ Arquivos úteis para preparação dos dados Non-IID nos clientes, antes de execu
 
 - /mnist_fedavg_entropy/custom/pt/utils/prepare_data.py
 - /mnist_fedavg_entropy/custom/pt/utils/mnist_dataset.py
+
+
+## CIFAR10 FedAvg Entropy
+
+Pasta com códigos fonte em Python para experimentos com dataset CIFAR-10:
+
+/cifar10_fedavg_entropy
+
+Arquivos de configuração da aplicação para executar com NVFlare:
+
+- /cifar10_fedavg_entropy/config/config_fed_client.json
+- /cifar10_fedavg_entropy/config/config_fed_server.json
+
+Arquivo do modelo de Rede Neural CNN, classe ModerateCNN:
+
+- /cifar10_fedavg_entropy/custom/pt/networks/cifar10_nets.py
+
+Código fonte do Learner, onde é feita a inicialização das variáveis, normalização dos dados, treinamento e validação:
+
+- /cifar10_fedavg_entropy/custom/pt/learners/cifar10_learner.py
+
+Arquivos úteis para preparação dos dados Non-IID nos clientes, antes de executar o algoritmo de Federated Learning:
+
+- /cifar10_fedavg_entropy/custom/pt/utils/prepare_data.py
+- /cifar10_fedavg_entropy/custom/pt/utils/mnist_dataset.py

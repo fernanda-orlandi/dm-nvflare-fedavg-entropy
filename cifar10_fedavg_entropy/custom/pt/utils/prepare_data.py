@@ -45,10 +45,10 @@ import numpy as np
 import torchvision.datasets as datasets
 
 
-def load_mnist_data(datadir):
+def load_cifar10_data(datadir):
     # download data
-    train_dataset = datasets.MNIST(root=datadir, train=True, download=True)
-    # valid_dataset = datasets.MNIST(root=datadir, train=False, download=True)
+    train_dataset = datasets.CIFAR10(root=datadir, train=True, download=True)
+    # valid_dataset = datasets.CIFAR10(root=datadir, train=False, download=True)
 
     # only training label is needed for doing split
     train_label = np.array(train_dataset.targets)
@@ -66,7 +66,7 @@ def get_site_class_summary(train_label, site_idx):
 
 
 def partition_data(datadir, num_sites, alpha):
-    train_label = load_mnist_data(datadir)
+    train_label = load_cifar10_data(datadir)
 
     min_size = 0
     K = 10
@@ -119,7 +119,7 @@ def entropy(labels):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="generate non-IID splits for MNIST")
+    parser = argparse.ArgumentParser(description="generate non-IID splits for CIFAR-10")
     parser.add_argument("--data_dir", type=str, default="./dataset")
     parser.add_argument("--num_sites", type=int, default=8)
     parser.add_argument("--alpha", type=float, default=0.5)
@@ -128,7 +128,7 @@ def main():
 
     np.random.seed(args.seed)
 
-    print(f"Partition MNIST dataset into {args.num_sites} sites with Dirichlet sampling under alpha {args.alpha}")
+    print(f"Partition CIFAR-10 dataset into {args.num_sites} sites with Dirichlet sampling under alpha {args.alpha}")
     site_idx, class_sum = partition_data(datadir=args.data_dir, num_sites=args.num_sites, alpha=args.alpha)
 
     # write to files
@@ -140,7 +140,7 @@ def main():
         sum_file.write(json.dumps(class_sum))
 
 
-    train_targets = load_mnist_data(args.data_dir)
+    train_targets = load_cifar10_data(args.data_dir)
     entropy_array = []
 
     site_file_path = os.path.join(args.data_dir, "site-")
@@ -148,7 +148,7 @@ def main():
         site_file_name = site_file_path + str(site + 1) + ".npy"
         site_idx_arr = np.array(site_idx[site])
         np.save(site_file_name, site_idx_arr)
-        
+
         # calculating site entropy
         entropy_array.append(entropy(train_targets[site_idx_arr]))
 

@@ -19,8 +19,8 @@ import numpy as np
 import torch
 import torch.optim as optim
 import math
-from pt.networks.mnist_nets import ModerateCNN
-from pt.utils.mnist_dataset import MNIST_Idx
+from pt.networks.cifar10_nets import ModerateCNN
+from pt.utils.cifar10_dataset import CIFAR10_Idx
 from torch.utils.tensorboard import SummaryWriter
 from torchvision import datasets, transforms
 from torchsummary import summary
@@ -36,7 +36,7 @@ from nvflare.app_common.app_constant import AppConstants, ModelName, ValidateTyp
 from nvflare.app_common.pt.pt_fedproxloss import PTFedProxLoss
 
 
-class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
+class CIFAR10Learner(Learner):  # also supports CIFAR10ScaffoldLearner
     def __init__(
         self,
         dataset_root: str = "./dataset",
@@ -48,10 +48,10 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
         central: bool = False,
         analytic_sender_id: str = "analytic_sender",
     ):
-        """Simple MNIST Trainer.
+        """Simple CIFAR-10 Trainer.
 
         Args:
-            dataset_root: directory with MNIST data.
+            dataset_root: directory with CIFAR-10 data.
             aggregation_epochs: the number of training epochs for a round. Defaults to 1.
             train_task_name: name of the task to train the model.
             submit_model_task_name: name of the task to submit the best local model.
@@ -85,7 +85,6 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
 
         self.mean_entropy = 0.0
 
-
     def initialize(self, parts: dict, fl_ctx: FLContext):
         # when the run starts, this is where the actual settings get initialized for trainer
 
@@ -117,51 +116,61 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
             return
         self.log_info(fl_ctx, f"Client subset size: {len(site_idx)}")
 
-        # For Entropy analysis
+        # ENTROPY analysis
         entropy_file_name = os.path.join(self.dataset_root, "meanentropy.txt")
         with open(entropy_file_name) as file:
             self.mean_entropy = float(file.readline()) # math.ceil(float(file.readline()))
-
         print(self.mean_entropy)
 
-#        site_entropy = self.entropy(site_idx)
-#        if (site_entropy > self.mean_entropy):
-#            self.system_panic(f"Entropy {site_entropy} over mean!", fl_ctx)
-#            return
+
+#        #site_entropy = self.entropy(site_idx)
+#        #if (site_entropy > self.mean_entropy):
+#        #    self.system_panic(f"Entropy {site_entropy} over mean!", fl_ctx)
+#        #    return
 
         # set the training-related parameters
         # can be replaced by a config-style block
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = ModerateCNN().to(self.device)
-        summary(self.model, (1,28,28))
-        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
-#        self.optimizer = optim.Adam(self.model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
-#        self.optimizer = optim.RMSprop(self.model.parameters(), lr=0.001, alpha=0.9, eps=1e-08, weight_decay=0, momentum=0.9, centered=False, foreach=None)
+        summary(self.model, (3,32,32))
+
+        self.log_info(fl_ctx, f"Optimizer: RMSprop")
+
+#        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
+#        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.lr, alpha=0.9, eps=1e-08, weight_decay=0, momentum=0, centered=False, foreach=None)
         self.criterion = torch.nn.CrossEntropyLoss()
+
         if self.fedproxloss_mu > 0:
             self.log_info(fl_ctx, f"using FedProx loss with mu {self.fedproxloss_mu}")
             self.criterion_prox = PTFedProxLoss(mu=self.fedproxloss_mu)
 
         self.transform_train = transforms.Compose(
             [
-                transforms.ToPILImage(),
                 transforms.ToTensor(),
-
-                # global Mean and Standard Deviation of the MNIST dataset
-                transforms.Normalize((0.1307,), (0.3081,)) 
+                transforms.ToPILImage(),
+                transforms.Pad(4, padding_mode="reflect"),
+                transforms.RandomCrop(32),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
+                    std=[x / 255.0 for x in [63.0, 62.1, 66.7]],
+                ),
             ]
         )
         self.transform_valid = transforms.Compose(
             [
                 transforms.ToTensor(),
-
-                # global Mean and Standard Deviation of the MNIST dataset
-                transforms.Normalize((0.1307,), (0.3081,))
+                transforms.Normalize(
+                    mean=[x / 255.0 for x in [125.3, 123.0, 113.9]],
+                    std=[x / 255.0 for x in [63.0, 62.1, 66.7]],
+                ),
             ]
         )
 
         # Set dataset
-        self.train_dataset = MNIST_Idx(
+        self.train_dataset = CIFAR10_Idx(
             root=self.dataset_root,
             # use whole dataset if self.central=True, otherwise, the site's dataset
             data_idx=None if self.central else site_idx,
@@ -169,16 +178,16 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
             download=True,
             transform=self.transform_train,
         )
-        self.valid_dataset = datasets.MNIST(
+        self.valid_dataset = datasets.CIFAR10(
             root=self.dataset_root,
             train=False,
             download=True,
             transform=self.transform_valid,
         )
 
-        self.train_loader = torch.utils.data.DataLoader(self.train_dataset, batch_size=100, shuffle=True, num_workers=2)
+        self.train_loader = torch.utils.data.DataLoader(self.train_dataset, batch_size=64, shuffle=True, num_workers=2)
 
-        self.valid_loader = torch.utils.data.DataLoader(self.valid_dataset, batch_size=100, shuffle=False, num_workers=2)
+        self.valid_loader = torch.utils.data.DataLoader(self.valid_dataset, batch_size=64, shuffle=False, num_workers=2)
 
     def finalize(self, fl_ctx: FLContext):
         # collect threads, close files here
@@ -192,10 +201,11 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
             epoch_len = len(train_loader)
             self.epoch_global = self.epoch_of_start_time + epoch
             self.log_info(fl_ctx, f"Local epoch {self.client_id}: {epoch + 1}/{self.aggregation_epochs} (lr={self.lr})")
+
             for i, (inputs, labels) in enumerate(train_loader):
 
                 site_entropy = self.entropy(labels)
-#                print(site_entropy)
+               # print(site_entropy)
 
                 if (site_entropy < self.mean_entropy):
 
@@ -339,7 +349,6 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
         with torch.no_grad():
             correct, total = 0, 0
             for i, (inputs, labels) in enumerate(valid_loader):
-
                 if abort_signal.triggered:
                     return None
                 inputs, labels = inputs.to(self.device), labels.to(self.device)
@@ -348,7 +357,6 @@ class MNISTLearner(Learner):  # also supports MNISTScaffoldLearner
 
                 total += inputs.data.size()[0]
                 correct += (pred_label == labels.data).sum().item()
-
             metric = correct / float(total)
             if tb_id:
                 self.writer.add_scalar(tb_id, metric, self.epoch_global)
