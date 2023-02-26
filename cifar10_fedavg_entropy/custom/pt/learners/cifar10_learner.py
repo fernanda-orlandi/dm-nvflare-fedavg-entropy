@@ -123,22 +123,16 @@ class CIFAR10Learner(Learner):  # also supports CIFAR10ScaffoldLearner
         print(self.mean_entropy)
 
 
-#        #site_entropy = self.entropy(site_idx)
-#        #if (site_entropy > self.mean_entropy):
-#        #    self.system_panic(f"Entropy {site_entropy} over mean!", fl_ctx)
-#        #    return
-
         # set the training-related parameters
         # can be replaced by a config-style block
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = ModerateCNN().to(self.device)
         summary(self.model, (3,32,32))
 
-        self.log_info(fl_ctx, f"Optimizer: RMSprop")
+        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
+#        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=True)
+#        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.lr, alpha=0.9, eps=1e-08, weight_decay=0, momentum=0, centered=False, foreach=None)
 
-#        self.optimizer = optim.SGD(self.model.parameters(), lr=self.lr, momentum=0.9)
-#        self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr, betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
-        self.optimizer = optim.RMSprop(self.model.parameters(), lr=self.lr, alpha=0.9, eps=1e-08, weight_decay=0, momentum=0, centered=False, foreach=None)
         self.criterion = torch.nn.CrossEntropyLoss()
 
         if self.fedproxloss_mu > 0:
