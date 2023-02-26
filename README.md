@@ -67,7 +67,7 @@ Arquivos úteis para preparação dos dados Non-IID nos clientes, antes de execu
 
 ## Instalação e Configuração
 
-1. Comandos para instalar softwares em uma VM com Ubuntu:
+#### 1. Comandos para instalar softwares em uma VM com Ubuntu:
 
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
@@ -77,14 +77,14 @@ sudo apt install python3-pip
 sudo pip3 install virtualenv
 ```
 
-2. Criar um VirtualEnv para SDK NVFlare:
+#### 2. Criar um VirtualEnv para SDK NVFlare:
 
 ```
 virtualenv nvflare-env
 source nvflare-env/bin/activate
 ```
 
-3. Instalar softwares no nvflare-env:
+#### 3. Instalar softwares no nvflare-env:
 
 ```
 python3 -m pip install -U pip
@@ -96,7 +96,7 @@ python3 -m pip install tensorboard==2.10
 pip3 install torchsummary
 ```
 
-4. Exemplo de comandos para Preparar dados de um dataset, na VM do servidor:
+#### 4. Exemplo de comandos para Preparar dados de um dataset, na VM do servidor:
 
 MNIST:
 ```
@@ -110,7 +110,7 @@ python3 ./poc/admin/transfer/cifar10_fedentropy/custom/pt/utils/prepare_data.py 
 
 Após, preparar os dados, copiar os arquivos .npy gerados para cada cliente.
 
-5. Inicializar servidor e clientes:
+#### 5. Inicializar servidor e clientes:
 
 VM Server:
 
@@ -136,7 +136,7 @@ Demais VMs, substituindo a variável N pelo numero ID do cliente:
 ./poc/site-{N}/startup/start.sh
 ```
 
-6. Comandos para executar as aplicações no NVflare:
+#### 6. Comandos para executar as aplicações no NVflare:
 
 Acessar ambiente de Administração, na VM server:
 
@@ -165,7 +165,7 @@ No Admin, comando para desligar clientes e servidor:
 shutdown all
 ```
 
-7. Comando para TensorBoard:
+#### 7. Comando para TensorBoard:
 
 ```
 tensorboard --logdir=poc/server/run_1/tb_events --bind_all
