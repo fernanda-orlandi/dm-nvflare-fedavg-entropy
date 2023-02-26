@@ -30,7 +30,7 @@
       "args": {
         "dataset_root": "{DATASET_ROOT}",
         "aggregation_epochs": 10,
-        "lr": 1e-2
+        "lr": 0.01
       }
     },
     {

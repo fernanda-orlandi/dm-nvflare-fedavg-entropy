@@ -1,7 +1,7 @@
 {
   "format_version": 2,
 
-  "min_clients": 10,
+  "min_clients": 19,
   "num_rounds": 50,
 
   "server": {
