@@ -1,73 +1,71 @@
-# Projeto para Dissertação de Mestrado
+# Project for Master's Dissertation
 
 #### Mitigating Non-IID Data impact in Federated Learning with Entropy
 
-Projeto para Dissertação de Mestrado, usando a tecnologia SDK NVFlare da NVIDIA.
-<br>Modelo de Federated Learning: FedAvg
-<br>Framework: Pytorch
+Project for Master's Dissertation, using SDK NVFlare technology from NVIDIA.
+<br>Federated Learning model: FedAvg-BE
+<br>Framework: PyTorch
+<br>SDK: NVFlare 2.0
 
-A medida de entropia pode ter uma relação direta com dados non-IID para otimizar o cálculo do SGD.
+FedAvg-BE is a model that provides Federated Learning with the border entropy evaluation to select good input from a non-iid data environment.
 
-Os dados podem ter menor incerteza com menor entropia.
-
-A entropia pode ser um critério de seleção de dados.
-
-A entropia medida no nó pode ser um critério para definir novo conjunto de treinamento.
-<br>Pois em um algoritmo de Rede Neural temos os dados de treinamento e dados de teste.
+The entropy measurement can be directly related to non-iid data to optimize the SGD calculation.
+<br>Data can have lower uncertainty with lower entropy.
+<br>The entropy measured in the node can be a criterion to define new training set.
 
 
-## MNIST FedAvg Entropy
+## MNIST FedAvg-BE
 
-Pasta com códigos fonte em Python para experimentos com dataset MNIST:
+Folder with source code in Python for experiments with MNIST dataset:
 
 /mnist_fedavg_entropy
 
-Arquivos de configuração da aplicação para executar com NVFlare:
+Configuration files to run the application with NVFlare:
 
 - /mnist_fedavg_entropy/config/config_fed_client.json
 - /mnist_fedavg_entropy/config/config_fed_server.json
 
-Arquivo do modelo de Rede Neural CNN, classe ModerateCNN:
+File with CNN Neural Network model, ModerateCNN class:
 
 - /mnist_fedavg_entropy/custom/pt/networks/mnist_nets.py
 
-Código fonte do Learner, onde é feita a inicialização das variáveis, normalização dos dados, treinamento e validação:
+Learner's source code, where variables are initialized, data are normalized and training and validation are performed:
 
 - /mnist_fedavg_entropy/custom/pt/learners/mnist_learner.py
 
-Arquivos úteis para preparação dos dados Non-IID nos clientes, antes de executar o algoritmo de Federated Learning:
+Useful files for preparing non-iid data on clients before running the Federated Learning application:
 
 - /mnist_fedavg_entropy/custom/pt/utils/prepare_data.py
 - /mnist_fedavg_entropy/custom/pt/utils/mnist_dataset.py
 
 
-## CIFAR10 FedAvg Entropy
+## CIFAR-10 FedAvg-BE
 
-Pasta com códigos fonte em Python para experimentos com dataset CIFAR-10:
+Folder with source code in Python for experiments with CIFAR-10 dataset
 
 /cifar10_fedavg_entropy
 
-Arquivos de configuração da aplicação para executar com NVFlare:
+Configuration files to run the application with NVFlare:
 
 - /cifar10_fedavg_entropy/config/config_fed_client.json
 - /cifar10_fedavg_entropy/config/config_fed_server.json
 
-Arquivo do modelo de Rede Neural CNN, classe ModerateCNN:
+File with CNN Neural Network model, ModerateCNN class:
 
 - /cifar10_fedavg_entropy/custom/pt/networks/cifar10_nets.py
 
-Código fonte do Learner, onde é feita a inicialização das variáveis, normalização dos dados, treinamento e validação:
+Learner's source code, where variables are initialized, data are normalized and training and validation are performed:
 
 - /cifar10_fedavg_entropy/custom/pt/learners/cifar10_learner.py
 
-Arquivos úteis para preparação dos dados Non-IID nos clientes, antes de executar o algoritmo de Federated Learning:
+Useful files for preparing non-iid data on clients before running the Federated Learning application:
 
 - /cifar10_fedavg_entropy/custom/pt/utils/prepare_data.py
 - /cifar10_fedavg_entropy/custom/pt/utils/mnist_dataset.py
 
-## Instalação e Configuração
+## Installation and Setup
 
-#### 1. Comandos para instalar softwares em uma VM com Ubuntu:
+#### 1. Commands to install software on a Virtual Machine (VM) with Ubuntu:
 
 ```
 sudo add-apt-repository ppa:deadsnakes/ppa
@@ -77,14 +75,14 @@ sudo apt install python3-pip
 sudo pip3 install virtualenv
 ```
 
-#### 2. Criar um VirtualEnv para SDK NVFlare:
+#### 2. Create a VirtualEnv for NVFlare SDK:
 
 ```
 virtualenv nvflare-env
 source nvflare-env/bin/activate
 ```
 
-#### 3. Instalar softwares no nvflare-env:
+#### 3. Install softwares in "nvflare-env" virtual environment:
 
 ```
 python3 -m pip install -U pip
@@ -96,7 +94,7 @@ python3 -m pip install tensorboard==2.10
 pip3 install torchsummary
 ```
 
-#### 4. Exemplo de comandos para Preparar dados de um dataset, na VM do servidor:
+#### 4. Example of commands to prepare data from a dataset, in the server VM:
 
 MNIST:
 ```
@@ -108,9 +106,9 @@ CIFAR-10:
 python3 ./poc/admin/transfer/cifar10_fedentropy/custom/pt/utils/prepare_data.py --data_dir="/home/ubuntu/dados/cifar10_data" --num_sites="19" --alpha="0.1"
 ```
 
-Após, preparar os dados, copiar os arquivos .npy gerados para cada cliente.
+After preparing the data, copy the generated .npy files to each client VM.
 
-#### 5. Inicializar servidor e clientes:
+#### 5. Initialize server and clients:
 
 VM Server:
 
@@ -130,21 +128,21 @@ VM Site-2:
 ./poc/site-2/startup/start.sh
 ```
 
-Demais VMs, substituindo a variável N pelo numero ID do cliente:
+Other VMs, replacing the variable N with the client's ID number:
 
 ```
 ./poc/site-{N}/startup/start.sh
 ```
 
-#### 6. Comandos para executar as aplicações no NVflare:
+#### 6. Commands to run applications in NVflare:
 
-Acessar ambiente de Administração, na VM server:
+Access the Administration environment, on the VM server:
 
 ```
 ./poc/admin/startup/fl_admin.sh
 ```
 
-No Admin, comandos para executar a aplicação nas VMs:
+In Admin mode, commands to run the application on VMs:
 
 ```
 set_run_number 1
@@ -153,19 +151,19 @@ deploy_app cifar10_fedentropy all
 start_app all
 ```
 
-No Admin, comando para verificar clientes:
+In Admin mode, command to check clients:
 
 ```
 check_status client
 ```
 
-No Admin, comando para desligar clientes e servidor:
+In Admin mode, command to shut down clients and server:
 
 ```
 shutdown all
 ```
 
-#### 7. Comando para TensorBoard:
+#### 7. Command for TensorBoard:
 
 ```
 tensorboard --logdir=poc/server/run_1/tb_events --bind_all
