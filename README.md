@@ -13,6 +13,9 @@ The entropy measurement can be directly related to non-iid data to optimize the 
 <br>Data can have lower uncertainty with lower entropy.
 <br>The entropy measured in the node can be a criterion to define new training set.
 
+The model is in the article of Orlandi *et al*, 2023:
+<br>ORLANDI, F. C.; ANJOS, J. C. S.; LEITHARDT, V. R. Q.; SANTANA, J. F. de P.; GEYER, C. F. R. **Entropy to mitigate non-IID data problem on Federated Learning for the Edge Intelligence environment**. In IEEE Access, 2023, doi: 10.1109/ACCESS.2023.3298704.
+
 
 ## MNIST FedAvg-BE
 
