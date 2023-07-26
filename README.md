@@ -15,6 +15,7 @@ The entropy measurement can be directly related to non-iid data to optimize the 
 
 The model is in the article of Orlandi *et al*, 2023:
 <br>ORLANDI, F. C.; ANJOS, J. C. S.; LEITHARDT, V. R. Q.; SANTANA, J. F. de P.; GEYER, C. F. R. **Entropy to mitigate non-IID data problem on Federated Learning for the Edge Intelligence environment**. In IEEE Access, 2023, doi: 10.1109/ACCESS.2023.3298704.
+<br><https://ieeexplore.ieee.org/document/10192897>
 
 
 ## MNIST FedAvg-BE
